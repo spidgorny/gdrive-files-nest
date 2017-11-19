@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { LoginController } from "./login/LoginController";
+import { LoginModule } from "./login/LoginModule";
 
 @Module({
-    modules: [],
+    modules: [LoginModule],
 })
 export class ApplicationModule {}
