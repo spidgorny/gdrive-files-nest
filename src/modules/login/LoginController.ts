@@ -1,24 +1,31 @@
 import { Controller, Get } from '@nestjs/common'
-import * as fs from "fs";
-const {promisify} = require('util');
-const readFileAsync = promisify(fs.readFile);
-import { template } from '../es6-template-literals';
-const handlebars = require('handlebars');
+import { BaseController } from '../BaseController'
+import {LoginService} from "./LoginService";
 
 @Controller()
-export class LoginController {
-	@Get()
-	render() {
-		let content = '<a href="#">Login with Google account</a>';
-		return this.renderTemplate(content);
+export class LoginController extends BaseController {
+
+	loginService: LoginService;
+
+	constructor() {
+		super();
+		this.loginService = new LoginService();
 	}
 
-	protected async renderTemplate(content: string) {
-		const html = await readFileAsync('template/bootstrap.html');
-		// console.log(html.length);
-		// console.log(html);	// Buffer
-		// console.log(html.toString().length);
-		return handlebars.compile(html.toString())({content});
+	@Get()
+	async render() {
+		let content;
+		try {
+			if (this.loginService.isAuth()) {
+				content = 'Login already. Redirect';
+				return this.renderTemplate(content);
+			}
+			let loginURI = await this.loginService.getLoginURI();
+			content = `<a href="${ loginURI }">Login with Google account</a> here:<br/>${ loginURI }`;
+			return this.renderTemplate(content);
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 }
