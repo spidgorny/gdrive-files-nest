@@ -14,7 +14,17 @@ export class LoginService {
 		'https://www.googleapis.com/auth/calendar',
 		'https://www.googleapis.com/auth/drive.metadata.readonly'
 	];
+
+	/**
+	 * @var OAuth2
+	 */
 	oauth2Client;
+	token;
+
+	/**
+	 * For profiling
+	 */
+	startTime: number;
 
 	constructor() {
 		fs.readFile(this.CLIENT_ID_PATH, async (err, content) => {
@@ -45,7 +55,11 @@ export class LoginService {
 				if (err) {
 					reject();
 				}
-				this.oauth2Client.credentials = JSON.parse(token);
+				this.token = JSON.parse(token);
+				this.oauth2Client.setCredentials(this.token);
+				google.options({
+					auth: this.oauth2Client
+				});
 				resolve();
 			});
 		});
@@ -79,6 +93,7 @@ export class LoginService {
 					reject(err);
 				}
 				console.log(tokens);
+				this.token = tokens;
 				this.storeToken(tokens);
 				this.oauth2Client.setCredentials(tokens);
 				google.options({
@@ -122,29 +137,49 @@ export class LoginService {
 	/**
 	 * Lists the names and IDs of up to 10 files.
 	 *
-	 * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
 	 */
-	listFiles() {
-		const service = google.drive('v3');
-		service.files.list({
-			pageSize: 10,
-			fields: "nextPageToken, files(id, name)"
-		}, function(err, response) {
-			if (err) {
-				console.log('The API returned an error: ' + err);
-				return;
-			}
-			const files = response.files;
-			if (files.length == 0) {
-				console.log('No files found.');
-			} else {
-				console.log('Files:');
-				for (let i = 0; i < files.length; i++) {
-					let file = files[i];
-					console.log('%s (%s)', file.name, file.id);
+	async listFiles() {
+		return new Promise((resolve, reject) => {
+			//console.log(this.token);
+			this.profile('service.files.list');
+			const service = google.drive('v3');
+			service.files.list({
+				auth: this.oauth2Client,
+				pageSize: 10,
+				fields: "nextPageToken, files(id, name)"
+			}, (err, response) => {
+				this.profileEnd();
+				if (err) {
+					console.log('The API returned an error: ' + err);
+					reject(err);
 				}
-			}
+				if (!response) {
+					console.log('response is null?', response);
+					reject(response);
+				}
+				const files = response.files;
+				if (files.length == 0) {
+					console.log('No files found.');
+				} else {
+					console.log('Files:');
+					for (let i = 0; i < files.length; i++) {
+						let file = files[i];
+						console.log('%s (%s)', file.name, file.id);
+					}
+				}
+				resolve(files);
+			});
 		});
+	}
+
+	profile(name: string) {
+		console.log(name);
+		this.startTime = new Date().getTime();
+	}
+
+	profileEnd() {
+		const diff = new Date().getTime() - this.startTime;
+		console.log('+', diff, 'ms');
 	}
 
 }

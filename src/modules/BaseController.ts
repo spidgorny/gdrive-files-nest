@@ -25,14 +25,30 @@ export class BaseController {
 			// console.log(html.toString().length);
 			this.templateFunc = handlebars.compile(html.toString());
 		}
-		const html = await readFileAsync(this.templateFile);
-		this.templateFunc = handlebars.compile(html.toString());
-		return this.templateFunc({content}).toString();
+		const template = await readFileAsync(this.templateFile);
+		this.templateFunc = handlebars.compile(template.toString());
+		//console.log(this.templateFunc);
+		const html = this.templateFunc({content});
+		//console.log(html, typeof html);
+		return html.toString();
 	}
 
-	protected login(@Res() response: Response) {
+	/**
+	 * Error: Can't set headers after they are sent.
+	 * @param {e.Response} response
+	 */
+	protected loginOrRedirect(@Res() response: Response) {
+		console.log('this.loginService.isAuth()', this.loginService.isAuth());
 		if (!this.loginService.isAuth()) {
 			response.location('/');
+		}
+		response.location('/').end();
+	}
+
+	protected loginOrException() {
+		console.log('this.loginService.isAuth()', this.loginService.isAuth());
+		if (!this.loginService.isAuth()) {
+			throw new Error('Please login first <a href="/">here</a>');
 		}
 	}
 
