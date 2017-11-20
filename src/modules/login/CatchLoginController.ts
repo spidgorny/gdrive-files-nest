@@ -19,7 +19,7 @@ export class CatchLoginController extends BaseController {
 			console.log(code);
 			const token = await this.loginService.catchLogin(code);
 			console.log(token);
-			content = token;
+			content = this.success('Login successful. Go to <a href="listFiles" class="btn btn-primary">List Files</a>');
 			return this.renderTemplate(content);
 		} catch (error) {
 			console.error(error);

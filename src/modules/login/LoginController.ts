@@ -24,7 +24,20 @@ export class LoginController extends BaseController {
 				//response.location('showFiles');
 			} else {
 				let loginURI = await this.loginService.getLoginURI();
-				content = `<a href="${ loginURI }">Login with Google account</a> here:<br/>${ loginURI }`;
+				content = `
+<div class="row">
+	<div class="col-sm-6 offset-sm-3">
+		<div class="card mt-5">
+			<div class="card-body">
+				<h5>Login</h5>
+				<p class="text-center">
+					<a href="${ loginURI }" class="btn btn-primary">Login with Google account</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+`;
 			}
 		} catch (error) {
 			console.error(error);

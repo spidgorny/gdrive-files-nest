@@ -1,3 +1,5 @@
+import {DriveFile} from "../files/DriveFile";
+
 const fs = require('fs');
 const google = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
@@ -55,12 +57,16 @@ export class LoginService {
 				if (err) {
 					reject();
 				}
-				this.token = JSON.parse(token);
-				this.oauth2Client.setCredentials(this.token);
-				google.options({
-					auth: this.oauth2Client
-				});
-				resolve();
+				if (token) {
+					console.log(token);
+					this.token = JSON.parse(token);
+					this.oauth2Client.setCredentials(this.token);
+					google.options({
+						auth: this.oauth2Client
+					});
+					resolve();
+				}
+				reject();
 			});
 		});
 	}
@@ -136,7 +142,7 @@ export class LoginService {
 
 	/**
 	 * Lists the names and IDs of up to 10 files.
-	 *
+	 * @return Promise
 	 */
 	async listFiles() {
 		return new Promise((resolve, reject) => {
@@ -157,7 +163,7 @@ export class LoginService {
 					console.log('response is null?', response);
 					reject(response);
 				}
-				const files = response.files;
+				const files: [DriveFile] = response.files;
 				if (files.length == 0) {
 					console.log('No files found.');
 				} else {

@@ -21,7 +21,7 @@ export class ListFilesController extends BaseController {
 			// this.loginOrRedirect(response);
 			this.loginOrException();
 			content = `<h1>Files</h1>`;
-			//const files = await this.loginService.listFiles();
+			//const files: DriveFile[] = await this.loginService.listFiles();
 			const files = this.listFiles();
 			console.log(files);
 			content = this.renderFolders(files);
@@ -35,8 +35,8 @@ export class ListFilesController extends BaseController {
 		response.type('html').send(content);
 	}
 
-	listFiles() {
-		return [{
+	listFiles(): DriveFile[] {
+		const files = [{
 			id: '1LBSCpTu3WiPbWu3VS04TqZ6MJQYRxFSs',
 			name: 'stefan',
 			parents: ['1q6yYWYd9cqPRgnZhwFq8ddatSsiIHnmj']
@@ -55,10 +55,13 @@ export class ListFilesController extends BaseController {
 				id: '1jQctyqk-ovQDqsslQb92KY9ulegZNXVd',
 				name: 'slawa',
 				parents: ['0AGQbDJ5eANsvUk9PVA']
-			}]
+			}];
+		return files.map(f => {
+			return new DriveFile(f);
+		});
 	}
 
-	renderFolders(files: Array<any>) {
+	renderFolders(files: Array<DriveFile>) {
 		let content = [];
 		for (let f of files) {
 			content.push(this.folderRow(f))
