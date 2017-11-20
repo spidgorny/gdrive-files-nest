@@ -11,14 +11,23 @@ export class BaseController {
 
 	templateFile = 'template/bootstrap.html';
 
+	templateTime;
+
+	templateFunc;
+
 	loginService: LoginService;
 
 	protected async renderTemplate(content: string) {
+		if (!this.templateFunc) {
+			const html = await readFileAsync(this.templateFile);
+			// console.log(html.length);
+			// console.log(html);	// Buffer
+			// console.log(html.toString().length);
+			this.templateFunc = handlebars.compile(html.toString());
+		}
 		const html = await readFileAsync(this.templateFile);
-		// console.log(html.length);
-		// console.log(html);	// Buffer
-		// console.log(html.toString().length);
-		return handlebars.compile(html.toString())({content});
+		this.templateFunc = handlebars.compile(html.toString());
+		return this.templateFunc({content}).toString();
 	}
 
 	protected login(@Res() response: Response) {
@@ -28,7 +37,11 @@ export class BaseController {
 	}
 
 	protected error(message) {
-		return `<div class="bg-danger">${ message }</div>`;
+		return `<div class="p-3 mb-2 bg-danger text-white">${ message }</div>`;
+	}
+
+	protected success(message) {
+		return `<div class="p-3 mb-2 bg-success text-white">${ message }</div>`;
 	}
 
 }

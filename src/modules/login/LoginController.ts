@@ -13,28 +13,38 @@ export class LoginController extends BaseController {
 		this.loginService = new LoginService();
 	}
 
+
 	@Get()
-	async render(@Res() response: Response) {
-		//return new Promise(async (resolve, reject) => {
-			let content;
-			try {
-				if (this.loginService.isAuth()) {
-					content = 'Login already. Redirect';
-					//response.location('showFiles');
-					return this.renderTemplate(content);
-				}
+	async index(@Res() response: Response) {
+		let content: string;
+		try {
+			if (this.loginService.isAuth()) {
+				const listFiles = '/listFiles';
+				content = this.success(`Login already. Redirecting to <a href="${ listFiles }">List Files</a>`);
+				//response.location('showFiles');
+			} else {
 				let loginURI = await this.loginService.getLoginURI();
 				content = `<a href="${ loginURI }">Login with Google account</a> here:<br/>${ loginURI }`;
-				let html = this.renderTemplate(content);
-				// resolve(html);
-				return html;
-			} catch (error) {
-				console.error(error);
-				let html = this.renderTemplate(this.error(error));
-				// resolve(html);
-				return html;
 			}
-		//});
+		} catch (error) {
+			console.error(error);
+			content = this.error(error);
+		}
+		console.log(content);
+		content = await this.renderTemplate(content);
+		console.log(content.length);
+		response.type('html').send(content);
+		// console.log(response);
+	}
+
+	@Get('static')
+	staticPage(@Res() response: Response) {
+		response.send(`static html`);
+	}
+
+	@Get('staticreturn')
+	staticReturn() {
+		return(`static html`);
 	}
 
 }
