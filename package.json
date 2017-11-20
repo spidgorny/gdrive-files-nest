@@ -15,6 +15,7 @@
     "@nestjs/microservices": "^4.0.0",
     "@nestjs/testing": "^4.0.0",
     "@nestjs/websockets": "^4.0.0",
+    "@types/express": "^4.0.39",
     "array-includes": "^3.0.3",
     "googleapis": "^22.2.0",
     "handlebars": "^4.0.11",

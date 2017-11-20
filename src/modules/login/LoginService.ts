@@ -41,19 +41,18 @@ export class LoginService {
 	 */
 	readToken() {
 		return new Promise((resolve, reject) => {
-			fs.readFile(this.TOKEN_PATH, function (err, token) {
+			fs.readFile(this.TOKEN_PATH, (err, token) => {
 				if (err) {
-					resolve();
-				} else {
-					this.oauth2Client.credentials = JSON.parse(token);
-					resolve();
+					reject();
 				}
+				this.oauth2Client.credentials = JSON.parse(token);
+				resolve();
 			});
 		});
 	}
 
 	isAuth() {
-		console.log(this.oauth2Client.credentials);
+		//console.log(this.oauth2Client.credentials);
 		return Object.keys(this.oauth2Client.credentials).length;
 	}
 

@@ -4,9 +4,8 @@ import {CatchLoginController} from "./CatchLoginController";
 
 @Module({
 	controllers: [LoginController, CatchLoginController],
-//	components: [CatsService],
+	components: [],
 	exports: [],
-	modules: [],
-	components: []
+	modules: []
 })
 export class LoginModule {}
