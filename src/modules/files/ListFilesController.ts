@@ -4,6 +4,8 @@ import {LoginService} from "../login/LoginService";
 import {Response} from "express";
 import {DriveFile} from "./DriveFile";
 import {FileLister} from './FileLister';
+import {CachedFileList} from './CachedFileList';
+import {DriveFileCollection} from './DriveFileCollection';
 
 @Controller()
 export class ListFilesController extends BaseController {
@@ -22,10 +24,13 @@ export class ListFilesController extends BaseController {
 			content = `<h1>Files</h1>`;
             // const files = this.listFiles();
             const fl = new FileLister(this.loginService);
-            const rawFiles = await fl.listFiles();
-            const files: DriveFile[] = this.convertToDriveFiles(rawFiles);
-			console.log(files);
-			content = this.renderFolders(files);
+            // const rawFiles = fl.listAllFiles();
+            // const files: DriveFile[] = this.convertToDriveFiles(rawFiles);
+            const cfl = new CachedFileList(fl);
+            const files = await cfl.listAllFiles();
+            const col = new DriveFileCollection(files);
+			// console.log(files);
+			content = this.renderFolders(col);
 		} catch (error) {
 			console.error(error);
 			content = this.error(error);
@@ -66,9 +71,11 @@ export class ListFilesController extends BaseController {
         });
 	}
 
-	renderFolders(files: Array<DriveFile>) {
+	renderFolders(col: DriveFileCollection) {
 		let content = [];
-		for (let f of files) {
+		let files = col.getRootFiles();
+		let folders = col.getOnlyFolders(files);
+		for (let f of folders) {
 			content.push(this.folderRow(f))
 		}
 		return content.join();
