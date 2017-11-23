@@ -89,8 +89,10 @@ export class LoginService {
 			return false;
 		}
         const expiry_date = this.oauth2Client.credentials.expiry_date;
-		console.log(expiry_date, new Date().getTime());
-		if (expiry_date > new Date().getTime()) {
+        let tstamp = new Date().getTime();
+        // console.log(expiry_date, tstamp,
+			// tstamp - expiry_date, 'remaining');
+		if (expiry_date < tstamp) {
 			return false;
 		}
 		return true;

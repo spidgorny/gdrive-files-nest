@@ -19,8 +19,9 @@ export class ListFilesController extends BaseController {
 			// this.loginOrRedirect(response);
 			this.loginOrException();
 			content = `<h1>Files</h1>`;
-			//const files: DriveFile[] = await this.loginService.listFiles();
-			const files = this.listFiles();
+            // const files = this.listFiles();
+            const rawFiles = await this.loginService.listFiles();
+            const files: DriveFile[] = this.convertToDriveFiles(rawFiles);
 			console.log(files);
 			content = this.renderFolders(files);
 		} catch (error) {
@@ -54,9 +55,13 @@ export class ListFilesController extends BaseController {
 				name: 'slawa',
 				parents: ['0AGQbDJ5eANsvUk9PVA']
 			}];
-		return files.map(f => {
-			return new DriveFile(f);
-		});
+		return this.convertToDriveFiles(files);
+	}
+
+	convertToDriveFiles(files: any) {
+        return files.map(f => {
+            return new DriveFile(f);
+        });
 	}
 
 	renderFolders(files: Array<DriveFile>) {

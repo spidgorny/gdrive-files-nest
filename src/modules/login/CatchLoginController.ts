@@ -5,11 +5,8 @@ import {LoginService} from "./LoginService";
 @Controller()
 export class CatchLoginController extends BaseController {
 
-	loginService: LoginService;
-
-	constructor() {
-		super();
-		this.loginService = new LoginService();
+	constructor(protected readonly loginService: LoginService) {
+		super(loginService);
 	}
 
 	@Get('catchLogin')
