@@ -3,6 +3,7 @@ import {BaseController} from '../BaseController'
 import {LoginService} from "../login/LoginService";
 import {Response} from "express";
 import {DriveFile} from "./DriveFile";
+import {FileLister} from './FileLister';
 
 @Controller()
 export class ListFilesController extends BaseController {
@@ -20,7 +21,8 @@ export class ListFilesController extends BaseController {
 			this.loginOrException();
 			content = `<h1>Files</h1>`;
             // const files = this.listFiles();
-            const rawFiles = await this.loginService.listFiles();
+            const fl = new FileLister(this.loginService);
+            const rawFiles = await fl.listFiles();
             const files: DriveFile[] = this.convertToDriveFiles(rawFiles);
 			console.log(files);
 			content = this.renderFolders(files);
@@ -85,13 +87,6 @@ export class ListFilesController extends BaseController {
 						<li><a href="#">Report File name either Slide or PDF</a>
 						<span class="badge badge-primary">new</span>
 						</li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
-						<li><a href="#">Report File name either Slide or PDF</a></li>
 					</ul>
 				</div>
 			</div>

@@ -2,6 +2,8 @@ import {TestFramework} from "./TestFramework";
 import {LoginService} from "../src/modules/login/LoginService";
 import {CachedFileList} from '../src/modules/files/CachedFileList';
 import {FileLister} from '../src/modules/files/FileLister';
+import {DriveFile} from '../src/modules/files/DriveFile';
+import {DriveFileCollection} from '../src/modules/files/DriveFileCollection';
 
 export class LoginServiceTest extends TestFramework {
 
@@ -38,6 +40,8 @@ export class LoginServiceTest extends TestFramework {
 
 			const files = await this.test_allFilesCached();
 			console.log('all files', files.length);
+
+            this.findRootFolders(files);
 		} catch(e) {
 			console.error('catch', e);
 		}
@@ -83,8 +87,20 @@ export class LoginServiceTest extends TestFramework {
         console.log('test_listAllFilesCached');
         const cfl = new CachedFileList(this.fl);
         const files = await	cfl.listAllFiles();
-        console.log('test_listAllFilesCached', files);
+        console.log('test_listAllFilesCached', files.length);
         return files;
 	}
+
+    private findRootFolders(files: DriveFile[]) {
+	    const col = new DriveFileCollection(files);
+	    const roots = col.getRootFiles();
+	    roots.forEach((file: DriveFile) => {
+	       console.log('*', file.name);
+	       let children = col.getChildren(file);
+	       children.forEach((f: DriveFile) => {
+	           console.log("\t", f.name);
+           })
+        });
+    }
 
 }

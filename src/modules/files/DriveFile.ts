@@ -2,7 +2,9 @@ export class DriveFile {
 
 	id: string;
 	name: string;
-	parents: [string];
+	parents: string[];
+	mimeType: string;
+	modifiedTime: string;
 
 	constructor(struct: any) {
 		for (let key in struct) {
@@ -12,4 +14,9 @@ export class DriveFile {
 		}
 	}
 
+    getParent() {
+        return ('parents' in this && this.parents.length)
+			? this.parents[0]
+			: null;
+    }
 }
