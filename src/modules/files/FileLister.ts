@@ -35,7 +35,7 @@ export class FileLister {
         service.files.list({
             auth: this.loginService.oauth2Client,
             pageSize: 100,
-            fields: "nextPageToken, files(id, name, parents, mimeType, modifiedTime)",
+            fields: "nextPageToken, files(id, name, parents, mimeType, modifiedTime, trashed)",
             pageToken: pageToken,
         }, callback);
     }

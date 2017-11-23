@@ -6,13 +6,19 @@ import {DriveFile} from "./DriveFile";
 import {FileLister} from './FileLister';
 import {CachedFileList} from './CachedFileList';
 import {DriveFileCollection} from './DriveFileCollection';
+const fs = require('fs');
+const handlebars = require('handlebars');
 
 @Controller()
 export class ListFilesController extends BaseController {
 
+    rowTemplate: Function;
+
 	constructor(protected readonly loginService: LoginService) {
 		super(loginService);
 		console.log('ListFilesController.constructor');
+		const html = fs.readFileSync('./src/modules/files/rowTemplate.html');
+		this.rowTemplate = handlebars.compile(html.toString());
 	}
 
 	@Get('listFiles')
@@ -21,7 +27,6 @@ export class ListFilesController extends BaseController {
 		try {
 			// this.loginOrRedirect(response);
 			this.loginOrException();
-			content = `<h1>Files</h1>`;
             // const files = this.listFiles();
             const fl = new FileLister(this.loginService);
             // const rawFiles = fl.listAllFiles();
@@ -76,9 +81,9 @@ export class ListFilesController extends BaseController {
 		let files = col.getRootFiles();
 		let folders = col.getOnlyFolders(files);
 		for (let f of folders) {
-			content.push(this.folderRow(f))
+			content.push(this.folderRowHB(f))
 		}
-		return content.join();
+		return content.join(String.fromCharCode(10));
 	}
 
 	folderRow(file: DriveFile) {
@@ -112,5 +117,9 @@ export class ListFilesController extends BaseController {
 `;
 		return template;
 	}
+
+    folderRowHB(file: DriveFile) {
+	    return this.rowTemplate(file);
+    }
 
 }

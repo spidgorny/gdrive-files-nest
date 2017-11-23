@@ -80,6 +80,9 @@ export class LoginService {
 
 	isAuth() {
 		//console.log(this.oauth2Client.credentials);
+        if (!('credentials' in this.oauth2Client)) {
+            return false;
+        }
 		if (!Object.keys(this.oauth2Client.credentials).length) {
 			return false;
 		}
