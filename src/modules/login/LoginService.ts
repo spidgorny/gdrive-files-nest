@@ -1,5 +1,6 @@
 import {DriveFile} from "../files/DriveFile";
 import {Component} from '@nestjs/common';
+import {DriveResponse} from './DriveResponse';
 
 const fs = require('fs');
 const google = require('googleapis');
@@ -185,35 +186,60 @@ export class LoginService {
 		return new Promise((resolve, reject) => {
 			//console.log(this.token);
 			this.profile('service.files.list');
-			const service = google.drive('v3');
-			service.files.list({
-				auth: this.oauth2Client,
-				pageSize: 10,
-				fields: "nextPageToken, files(id, name)"
-			}, (err, response) => {
+			this.listFilesPage(null, (err, response) => {
 				this.profileEnd();
 				if (err) {
 					console.log('The API returned an error: ' + err);
 					return reject(err);
 				}
-				if (!response) {
-					console.log('response is null?', response);
-					return reject(response);
-				}
-				const files: [DriveFile] = response.files;
-				if (files.length == 0) {
-					console.log('No files found.');
-				} else {
-					console.log('Files:');
-					for (let i = 0; i < files.length; i++) {
-						let file = files[i];
-						console.log('%s (%s)', file.name, file.id);
-					}
-				}
+				const files = response.files;
 				resolve(files);
 			});
 		});
 	}
+
+	listFilesPage(pageToken, callback) {
+        const service = google.drive('v3');
+        service.files.list({
+            auth: this.oauth2Client,
+            pageSize: 10,
+            fields: "nextPageToken, files(id, name)",
+            pageToken: pageToken,
+        }, callback);
+    }
+
+    /**
+     * @returns {Promise<[]>}
+     */
+	listAllFiles(): Promise<Array<any>> {
+		return new Promise(async (resolve, reject) => {
+		    let acc = [];
+            let nextPageToken = null;
+            do {
+                let response: DriveResponse = await this.listFilesPageGetResponse(nextPageToken);
+                console.log(Object.keys(response));
+                acc = acc.concat(response.files);
+                nextPageToken = 'nextPageToken' in response ? response.nextPageToken : null;
+            } while (nextPageToken);
+            resolve(acc);
+        });
+	}
+
+    /**
+     * @param nextPageToken
+     * @returns {Promise<DriveResponse>}
+     */
+	listFilesPageGetResponse(nextPageToken?: string): Promise<DriveResponse> {
+	    return new Promise((resolve, reject) => {
+            this.listFilesPage(nextPageToken, (err, response: DriveResponse) => {
+                if (err) {
+                    console.log('The API returned an error: ' + err);
+                    return reject(err);
+                }
+                resolve(response);
+            });
+        });
+    }
 
 	profile(name: string) {
 		this.profileName = name;
