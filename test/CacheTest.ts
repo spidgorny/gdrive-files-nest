@@ -4,13 +4,13 @@ const cache = require('node-file-cache').create({
 });  // default configuration
 
 const key = 'drive-files';
-const cachedItem = cache.get(key);
+let cachedItem = cache.get(key);
 if (!cachedItem) {
     console.log('set');
     cache.set(key, [
         'file1', 'file2'
     ]);
-    const cachedItem = cache.get(key);
+    cachedItem = cache.get(key);
 }
 
 console.log(cachedItem);
