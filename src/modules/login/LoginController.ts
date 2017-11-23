@@ -6,13 +6,9 @@ import {Response} from "express";
 @Controller()
 export class LoginController extends BaseController {
 
-	loginService: LoginService;
-
-	constructor() {
-		super();
-		this.loginService = new LoginService();
+	constructor(protected readonly loginService: LoginService) {
+		super(loginService);
 	}
-
 
 	@Get()
 	async index(@Res() response: Response) {
@@ -59,5 +55,11 @@ export class LoginController extends BaseController {
 	staticReturn() {
 		return(`static html`);
 	}
+
+    @Get('logout')
+    async logout() {
+        await this.loginService.logout();
+        return await this.renderTemplate('Logout done.<br /><a href="/">Homepage</a>');
+    }
 
 }

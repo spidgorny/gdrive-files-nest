@@ -1,11 +1,12 @@
 import {DriveFile} from "../files/DriveFile";
+import {Component} from '@nestjs/common';
 
 const fs = require('fs');
 const google = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
 const plus = google.plus('v1');
 
-
+@Component()
 export class LoginService {
 
 	TOKEN_DIR = __dirname + '/../../../.credentials/';
@@ -27,23 +28,37 @@ export class LoginService {
 	 * For profiling
 	 */
 	startTime: number;
+    private profileName: string;
 
 	constructor() {
-		fs.readFile(this.CLIENT_ID_PATH, async (err, content) => {
-			if (err) {
-				console.log('Error loading client secret file: ' + err);
-				return;
-			}
-			// Authorize a client with the loaded credentials, then call the
-			// Drive API.
-			const config = JSON.parse(content).web;
-			this.oauth2Client = new OAuth2(
-				config.client_id,
-				config.client_secret,
-				config.redirect_uri,
-			);
+		console.log('ListService.constructor');
+	}
 
-			await this.readToken();
+	async makeOAuth() {
+		return new Promise((resolve, reject) => {
+			fs.readFile(this.CLIENT_ID_PATH, async (err, content) => {
+				if (err) {
+					console.log('Error loading client secret file: ' + err);
+					return reject(err);
+				}
+				// Authorize a client with the loaded credentials, then call the
+				// Drive API.
+				const config = JSON.parse(content).web;
+				this.oauth2Client = new OAuth2(
+					config.client_id,
+					config.client_secret,
+					config.redirect_uri,
+				);
+				console.log('this.oauth2Client');
+
+				try {
+					await this.readToken();
+                } catch (e) {
+					//console.error(e);
+					//{ Error: ENOENT: no such file or directory, open '.credentials\google_token.json'
+                }
+				resolve();
+			});
 		});
 	}
 
@@ -55,25 +70,30 @@ export class LoginService {
 		return new Promise((resolve, reject) => {
 			fs.readFile(this.TOKEN_PATH, (err, token) => {
 				if (err) {
-					reject();
+					return reject(err);
 				}
-				if (token) {
-					console.log(token);
-					this.token = JSON.parse(token);
-					this.oauth2Client.setCredentials(this.token);
-					google.options({
-						auth: this.oauth2Client
-					});
-					resolve();
-				}
-				reject();
+				// console.log('token', token);
+				this.token = JSON.parse(token);
+				this.oauth2Client.setCredentials(this.token);
+				google.options({
+					auth: this.oauth2Client
+				});
+				resolve();
 			});
 		});
 	}
 
 	isAuth() {
 		//console.log(this.oauth2Client.credentials);
-		return Object.keys(this.oauth2Client.credentials).length;
+		if (!Object.keys(this.oauth2Client.credentials).length) {
+			return false;
+		}
+        const expiry_date = this.oauth2Client.credentials.expiry_date;
+		console.log(expiry_date, new Date().getTime());
+		if (expiry_date > new Date().getTime()) {
+			return false;
+		}
+		return true;
 	}
 
 	async getLoginURI() {
@@ -92,13 +112,14 @@ export class LoginService {
 
 	catchLogin(code: string) {
 		return new Promise((resolve, reject) => {
+			console.log(this.oauth2Client);
 			this.oauth2Client.getToken(code, (err, tokens) => {
 				// Now tokens contains an access_token and an optional refresh_token. Save them.
 				if (err) {
-					console.error(err);
-					reject(err);
+					console.error('catchLogin', err);
+					return reject(err);
 				}
-				console.log(tokens);
+				console.log('catchLogin', tokens);
 				this.token = tokens;
 				this.storeToken(tokens);
 				this.oauth2Client.setCredentials(tokens);
@@ -127,24 +148,38 @@ export class LoginService {
 		console.log('Token stored to ' + this.TOKEN_PATH);
 	}
 
+	logout() {
+		fs.unlinkSync(this.TOKEN_PATH);
+		this.token = null;
+        this.oauth2Client.setCredentials(null);
+        google.options({
+            auth: null
+        });
+	}
+
 	getMe() {
-		plus.people.get({
-			userId: 'me',
-		}, function (err, response) {
-			// handle err and response
-			if (err) {
-				console.error(err);
-				return;
-			}
-			console.log(response)
-		})
+		return new Promise((resolve, reject) => {
+            console.log('plus.people.get');
+            plus.people.get({
+                auth: this.oauth2Client,
+                userId: 'me',
+            }, function (err, response) {
+                // handle err and response
+                if (err) {
+                    console.error('getMe', err);
+                    return reject(err);
+                }
+                console.log('getMe', response);
+                resolve(response);
+            });
+        });
 	}
 
 	/**
 	 * Lists the names and IDs of up to 10 files.
 	 * @return Promise
 	 */
-	async listFiles() {
+	listFiles() {
 		return new Promise((resolve, reject) => {
 			//console.log(this.token);
 			this.profile('service.files.list');
@@ -157,11 +192,11 @@ export class LoginService {
 				this.profileEnd();
 				if (err) {
 					console.log('The API returned an error: ' + err);
-					reject(err);
+					return reject(err);
 				}
 				if (!response) {
 					console.log('response is null?', response);
-					reject(response);
+					return reject(response);
 				}
 				const files: [DriveFile] = response.files;
 				if (files.length == 0) {
@@ -179,13 +214,14 @@ export class LoginService {
 	}
 
 	profile(name: string) {
-		console.log(name);
+		this.profileName = name;
+		// console.log(name);
 		this.startTime = new Date().getTime();
 	}
 
 	profileEnd() {
 		const diff = new Date().getTime() - this.startTime;
-		console.log('+', diff, 'ms');
+		console.log(this.profileName, '+', diff, 'ms');
 	}
 
 }

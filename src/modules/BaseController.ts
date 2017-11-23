@@ -15,7 +15,9 @@ export class BaseController {
 
 	templateFunc;
 
-	loginService: LoginService;
+	constructor(protected readonly loginService: LoginService) {
+
+	}
 
 	protected async renderTemplate(content: string) {
 		if (!this.templateFunc) {

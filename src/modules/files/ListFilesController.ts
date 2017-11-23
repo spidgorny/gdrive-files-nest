@@ -7,11 +7,9 @@ import {DriveFile} from "./DriveFile";
 @Controller()
 export class ListFilesController extends BaseController {
 
-	loginService: LoginService;
-
-	constructor() {
-		super();
-		this.loginService = new LoginService();
+	constructor(protected readonly loginService: LoginService) {
+		super(loginService);
+		console.log('ListFilesController.constructor');
 	}
 
 	@Get('listFiles')

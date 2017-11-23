@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { LoginController } from './LoginController';
 import {CatchLoginController} from "./CatchLoginController";
+import {LoginService} from './LoginService';
 
 @Module({
 	controllers: [LoginController, CatchLoginController],
-	components: [],
+    components: [LoginService],
 	exports: [],
 	modules: []
 })
