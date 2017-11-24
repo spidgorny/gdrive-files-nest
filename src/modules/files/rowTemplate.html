@@ -5,18 +5,20 @@
                 <div class="card-title">
                     <h5>Folder {{ name }}</h5>
                 </div>
-                <ul>
-                    {{#each children}}
-                        <li>
-                            <a href="#{{ id }}" class="file" data-id="{{ id }}">
-                                {{ name }}
-                            </a>
-                            {{#if isNew}}
-                                <span class="badge badge-primary">new</span>
-                            {{/if}}
-                        </li>
-                    {{/each}}
-                </ul>
+                <div style="max-height: 10em; overflow: auto;">
+                    <ul>
+                        {{#each children}}
+                            <li>
+                                <a href="#{{ id }}" class="file" data-id="{{ id }}">
+                                    {{ name }}
+                                </a>
+                                {{#if isNew}}
+                                    <span class="badge badge-primary">new</span>
+                                {{/if}}
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

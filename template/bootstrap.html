@@ -8,6 +8,37 @@
 
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <style>
+
+        /* https://bootsnipp.com/snippets/featured/circle-button */
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            line-height: 1.428571429;
+            border-radius: 15px;
+        }
+        .btn-circle.btn-lg {
+            width: 50px;
+            height: 50px;
+            padding: 10px 16px;
+            font-size: 18px;
+            line-height: 1.33;
+            border-radius: 25px;
+        }
+        .btn-circle.btn-xl {
+            width: 70px;
+            height: 70px;
+            padding: 10px 16px;
+            font-size: 24px;
+            line-height: 1.33;
+            border-radius: 35px;
+        }
+
+
+    </style>
 </head>
 <body>
 <div class="container">
@@ -55,9 +86,9 @@
            const folderRow = $this.closest('.folder-row');
            const descDiv = folderRow.find('.descriptionDiv');
            console.log(descDiv);
-           descDiv.load('getFileInfo', {
+           descDiv.load('getFileInfo', $.param({
                id: $this.attr('data-id')
-           });
+           }));
        });
     });
 </script>

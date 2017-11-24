@@ -44,4 +44,13 @@ export class DriveFileCollection {
         });
     }
 
+    findById(id: string) {
+        const list = this.files.filter((el) => {
+            return el.id == id;
+        });
+        if (list.length) {
+            return list[0];
+        }
+        return null;
+    }
 }

@@ -1,4 +1,4 @@
-import {Controller, Get, Res} from '@nestjs/common'
+import {Controller, Get, Query, Res} from '@nestjs/common'
 import {BaseController} from '../BaseController'
 import {LoginService} from "../login/LoginService";
 import {Response} from "express";
@@ -14,28 +14,48 @@ export class ListFilesController extends BaseController {
 
     rowTemplate: Function;
 
+    desc: any;
+
+    col: DriveFileCollection;
+
 	constructor(protected readonly loginService: LoginService) {
 		super(loginService);
 		console.log('ListFilesController.constructor');
 		const html = fs.readFileSync('./src/modules/files/rowTemplate.html');
 		this.rowTemplate = handlebars.compile(html.toString());
+
+		const descJson = fs.readFileSync('data/business/slawa.json');
+        this.desc = JSON.parse(descJson);
+        console.log('desc', Object.keys(this.desc).length);
+
+        this.loadFiles().then(() => {
+            console.log('this.col', this.col.constructor.name);
+        });
 	}
 
-	@Get('listFiles')
-	async render(@Res() response: Response) {
-		let content;
-		try {
-			// this.loginOrRedirect(response);
-			this.loginOrException();
+	async loadFiles() {
+        try {
+            // this.loginOrRedirect(response);
+            this.loginOrException();
             // const files = this.listFiles();
             const fl = new FileLister(this.loginService);
             // const rawFiles = fl.listAllFiles();
             // const files: DriveFile[] = this.convertToDriveFiles(rawFiles);
             const cfl = new CachedFileList(fl);
             const files = await cfl.listAllFiles();
-            const col = new DriveFileCollection(files);
-			// console.log(files);
-			content = this.renderFolders(col);
+            console.log('loadFiles', files.length);
+            this.col = new DriveFileCollection(files);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+	@Get('listFiles')
+	async render(@Res() response: Response) {
+		let content;
+		try {
+		    await this.loadFiles();
+			content = this.renderFolders();
 		} catch (error) {
 			console.error(error);
 			content = this.error(error);
@@ -76,11 +96,11 @@ export class ListFilesController extends BaseController {
         });
 	}
 
-	renderFolders(col: DriveFileCollection) {
+	renderFolders() {
 		let content = [];
-		let files = col.getRootFiles();
-		let folders = col.getOnlyFolders(files);
-		folders = col.addChildren(folders);
+		let files = this.col.getRootFiles();
+		let folders = this.col.getOnlyFolders(files);
+		folders = this.col.addChildren(folders);
 		for (let f of folders) {
 			content.push(this.folderRowHB(f))
 		}
@@ -121,6 +141,46 @@ export class ListFilesController extends BaseController {
 
     folderRowHB(file: DriveFile) {
 	    return this.rowTemplate(file);
+    }
+
+    @Get('getFileInfo')
+    async getFileInfo(@Query('id') id) {
+        await this.loadFiles();
+	    let content = [];
+        let file = this.col.findById(id);
+        let fileName = file ? file.name : null;
+        content.push(`<div class="card-title">
+                    <h6>${fileName || id}</h6></div>`);
+
+	    let desc;
+	    if (id in this.desc) {
+            desc = '<p>'+this.desc[id]+'</p>';
+        } else {
+	        if (this.col) {
+                if (file) {
+                    desc = this.desc[file.name]
+                        || '<i>no desc for ' + file.name + '</i>';
+                } else {
+                    desc = '<i>no desc found</i>';
+                }
+            } else {
+	            desc = '<i>file collection not loaded</i>';
+            }
+        }
+        content.push(desc);
+
+	    content.push(`<br />
+<a href="${file.webViewLink}" target="_blank">
+    <button type="button" class="btn btn-primary btn-circle btn-lg float-right">
+        <img class="icon" src="http://www.entypo.com/images/publish.svg" alt="Open" style="
+    width: 20px;
+    max-width: 100%;
+    vertical-align: middle;
+    display: inline-block;
+"/>
+    </button>
+</a>`);
+	    return content.join('');
     }
 
 }

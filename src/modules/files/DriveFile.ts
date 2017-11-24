@@ -5,6 +5,8 @@ export class DriveFile {
 	parents: string[];
 	mimeType: string;
 	modifiedTime: string;
+	trashed: boolean;
+    webViewLink: string;
 
 	children: DriveFile[];
 
