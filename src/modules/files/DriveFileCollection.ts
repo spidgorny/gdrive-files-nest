@@ -37,4 +37,11 @@ export class DriveFileCollection {
         }).length;
     }
 
+    addChildren(folders: DriveFile[]) {
+	    return folders.map(dir => {
+	       dir.children = this.getChildren(dir);
+	       return dir;
+        });
+    }
+
 }

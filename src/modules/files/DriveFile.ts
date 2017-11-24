@@ -6,6 +6,8 @@ export class DriveFile {
 	mimeType: string;
 	modifiedTime: string;
 
+	children: DriveFile[];
+
 	constructor(struct: any) {
 		for (let key in struct) {
 			if (struct.hasOwnProperty(key)) {
@@ -19,4 +21,12 @@ export class DriveFile {
 			? this.parents[0]
 			: null;
     }
+
+    isNew() {
+		const diff = 1000 * 60 * 60 * 24 * 60;
+        const lastWeek = new Date(
+            new Date().getTime() - diff);
+        return new Date(this.modifiedTime) > lastWeek;
+    }
+
 }

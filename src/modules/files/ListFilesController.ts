@@ -80,6 +80,7 @@ export class ListFilesController extends BaseController {
 		let content = [];
 		let files = col.getRootFiles();
 		let folders = col.getOnlyFolders(files);
+		folders = col.addChildren(folders);
 		for (let f of folders) {
 			content.push(this.folderRowHB(f))
 		}
